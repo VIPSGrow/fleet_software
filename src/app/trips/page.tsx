@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
+import { listTrips } from '@/server/actions/trips'
 import { TripTable } from './_components/trip-table'
-import { TripForm } from './_components/trip-form'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -29,11 +29,8 @@ export default function TripsPage() {
 }
 
 async function TripsContent() {
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/trips?limit=50`, {
-    cache: 'no-store',
-  })
-  const data = await res.json()
-  const trips = data.trips || []
+  const result = await listTrips({ limit: 50 })
+  const trips = result.trips || []
 
-  return <TripTable trips={trips} onTripUpdated={() => window.location.reload()} />
+  return <TripTable trips={trips} />
 }

@@ -1,3 +1,5 @@
+'use server'
+
 import { VehicleService } from '@/server/services/vehicle.service'
 import { createVehicleSchema } from '@/types/vehicle'
 

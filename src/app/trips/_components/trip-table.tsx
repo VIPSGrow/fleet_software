@@ -1,31 +1,29 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Trip } from '@/types/trip'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDate, formatNumber } from '@/server/utils/formatters'
 import { Badge } from '@/components/ui/badge'
 import { TripForm } from './trip-form'
+import { updateTripStatus } from '@/server/actions/trips'
 
 interface TripTableProps {
   trips: Trip[]
-  onTripUpdated?: () => void
 }
 
-export function TripTable({ trips, onTripUpdated }: TripTableProps) {
+export function TripTable({ trips }: TripTableProps) {
+  const router = useRouter()
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null)
   const [loading, setLoading] = useState<string | null>(null)
 
   const handleStatusChange = async (tripId: string, status: string) => {
     setLoading(tripId)
     try {
-      const res = await fetch('/api/trips/status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: tripId, status }),
-      })
-      if (res.ok) {
-        onTripUpdated?.()
+      const result = await updateTripStatus(tripId, status as 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED')
+      if (result.success) {
+        router.refresh()
       }
     } catch (error) {
       console.error('Failed to update trip status:', error)
@@ -126,7 +124,7 @@ export function TripTable({ trips, onTripUpdated }: TripTableProps) {
           onClose={() => setEditingTrip(null)}
           onSuccess={() => {
             setEditingTrip(null)
-            onTripUpdated?.()
+            router.refresh()
           }}
         />
       )}

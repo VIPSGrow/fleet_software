@@ -1,3 +1,5 @@
+'use server'
+
 import { VehicleService } from '@/server/services/vehicle.service'
 
 export async function listVehiclesAction(page = 1, limit = 10, search?: string, ownerType?: string, status?: string) {

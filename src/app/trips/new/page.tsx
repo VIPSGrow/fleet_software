@@ -22,7 +22,9 @@ export default function NewTripPage() {
           <p className="text-muted-foreground">Create a new trip entry</p>
         </div>
 
-        <TripForm onClose={() => router.back()} onSuccess={handleSuccess} />
+        <div className="max-w-2xl rounded-lg border bg-card p-6">
+          <TripForm onClose={() => router.back()} onSuccess={handleSuccess} />
+        </div>
       </div>
     </PageShell>
   )

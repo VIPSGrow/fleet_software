@@ -1,6 +1,1 @@
 export * from './create-trip'
-export * from './update-trip'
-export * from './list-trips'
-export * from './get-trip'
-export * from './complete-trip'
-export * from './update-trip-status'

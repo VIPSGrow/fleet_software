@@ -1,3 +1,5 @@
+'use server'
+
 import { VehicleService } from '@/server/services/vehicle.service'
 
 export async function deleteVehicleAction(id: string) {
