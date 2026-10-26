@@ -12,6 +12,7 @@ import {
   Fuel,
   Wrench,
   CircleDot,
+  Zap,
   FileCheck,
   BarChart3,
   LayoutDashboard,
@@ -32,6 +33,7 @@ const navItems = [
   { href: '/fuel', label: 'Fuel', icon: Fuel },
   { href: '/maintenance', label: 'Maintenance', icon: Wrench },
   { href: '/tyres', label: 'Tyres', icon: CircleDot },
+  { href: '/batteries', label: 'Batteries', icon: Zap },
   { href: '/compliance', label: 'Compliance', icon: FileCheck },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
 ]
@@ -79,7 +81,7 @@ export function Sidebar() {
       </div>
       <div className="p-4 border-t">
         <p className="text-xs text-muted-foreground">
-          © 2024 Fleet Software
+          © {new Date().getFullYear()} <a href="https://gtsol.in" target="_blank" rel="noopener noreferrer">Fleet Software</a>
         </p>
       </div>
     </aside>

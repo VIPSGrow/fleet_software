@@ -6,6 +6,7 @@ import { createFuelEntryAction, updateFuelEntryAction, listVehiclesAction } from
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/components/ui/toast'
 
@@ -129,11 +130,11 @@ export function FuelForm({ entry, onSuccess }: FuelFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="entryDate">Entry Date</Label>
-          <Input
-            id="entryDate"
-            type="date"
+          <DatePicker
             value={formData.entryDate}
-            onChange={(e) => setFormData({ ...formData, entryDate: e.target.value })}
+            onChange={(val) => setFormData({ ...formData, entryDate: val })}
+            placeholder="Pick entry date"
+            disabled={isSubmitting}
           />
           {errors.entryDate && <p className="text-sm text-red-600">{errors.entryDate}</p>}
         </div>

@@ -8,6 +8,14 @@ const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableE
 )
 Table.displayName = 'Table'
 
+const TableContainer = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('overflow-x-auto', className)} {...props} />
+  )
+)
+TableContainer.displayName = 'TableContainer'
+Table.displayName = 'Table'
+
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
@@ -88,4 +96,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  TableContainer,
 }

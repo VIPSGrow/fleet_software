@@ -5,6 +5,7 @@ import { listVehiclesAction } from '@/server/actions/vehicles'
 import { Button } from '@/components/ui/button'
 import { MaintenanceTable } from './_components/maintenance-table'
 import { MaintenanceFilterForm } from './_components/maintenance-filter-form'
+import { WorkshopCreateDialog } from './_components/workshop-create-dialog'
 
 interface MaintenancePageProps {
   searchParams: Promise<{
@@ -61,14 +62,17 @@ export default async function MaintenancePage({ searchParams }: MaintenancePageP
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Maintenance &amp; Repair Register</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Maintenance & Repair Register</h1>
           <p className="text-muted-foreground">
             Track maintenance and repair jobs across your fleet
           </p>
         </div>
-        <Button asChild>
-          <Link href="/maintenance/new">New Job</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <WorkshopCreateDialog />
+          <Button asChild>
+            <Link href="/maintenance/new">New Job</Link>
+          </Button>
+        </div>
       </div>
 
       <MaintenanceFilterForm vehicles={vehicles} />

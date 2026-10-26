@@ -9,6 +9,7 @@ import { formatCurrency } from '@/server/utils/formatters'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
   Select,
   SelectContent,
@@ -155,12 +156,12 @@ export function MaintenanceForm({ vehicles, workshops, onSuccess }: MaintenanceF
 
         <div className="space-y-2">
           <Label htmlFor="jobDate">Service Date</Label>
-          <Input
-            id="jobDate"
-            type="date"
+          <DatePicker
             value={formData.jobDate}
+            onChange={(val) => setFormData({ ...formData, jobDate: val })}
+            placeholder="Pick service date"
+            disabled={isSubmitting}
             max={new Date().toISOString().split('T')[0]}
-            onChange={(e) => setFormData({ ...formData, jobDate: e.target.value })}
           />
           {errors.jobDate && <p className="text-sm text-red-600">{errors.jobDate}</p>}
         </div>

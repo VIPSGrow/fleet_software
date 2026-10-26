@@ -21,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { format } from 'date-fns'
+import { DatePicker } from '@/components/ui/date-picker'
 import { createTrip, updateTrip, updateTripStatus } from '@/server/actions/trips'
 import { listVehiclesAction } from '@/server/actions/vehicles'
 import { listDriversAction } from '@/server/actions/drivers'
@@ -37,6 +37,11 @@ export function TripForm({ trip, onClose, onSuccess }: TripFormProps) {
   const [error, setError] = useState('')
   const [vehicles, setVehicles] = useState<{ id: string; vehicleNo: string; makeModel: string; status: string }[]>([])
   const [drivers, setDrivers] = useState<{ id: string; fullName: string; licenseNumber: string; status: string }[]>([])
+  const [tripDate, setTripDate] = useState<string>(
+    trip?.tripDate
+      ? new Date(trip.tripDate).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0]
+  )
 
   const {
     register,
@@ -46,7 +51,7 @@ export function TripForm({ trip, onClose, onSuccess }: TripFormProps) {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: zodResolver(trip ? CreateTripSchema.omit({ tripDate: true }).partial() : CreateTripSchema),
+    resolver: zodResolver(CreateTripSchema.omit({ tripDate: true })),
     defaultValues: trip
       ? {
           vehicleId: trip.vehicleId,
@@ -57,7 +62,6 @@ export function TripForm({ trip, onClose, onSuccess }: TripFormProps) {
           revenue: trip.revenue,
         }
       : {
-          tripDate: new Date(),
           vehicleId: '',
           driverId: '',
           origin: '',
@@ -77,6 +81,7 @@ export function TripForm({ trip, onClose, onSuccess }: TripFormProps) {
         totalKm: trip.totalKm,
         revenue: trip.revenue,
       })
+      setTripDate(new Date(trip.tripDate).toISOString().split('T')[0])
     }
   }, [trip, reset])
 
@@ -107,7 +112,7 @@ export function TripForm({ trip, onClose, onSuccess }: TripFormProps) {
     try {
       const payload = {
         ...data,
-        tripDate: trip ? trip.tripDate : data.tripDate || new Date(),
+        tripDate: new Date(tripDate),
         totalKm: Number(data.totalKm),
         revenue: Number(data.revenue),
       }
@@ -132,7 +137,7 @@ export function TripForm({ trip, onClose, onSuccess }: TripFormProps) {
   }
 
   const formContent = (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit, (validationErrors) => console.log(validationErrors))} className="space-y-4">
       {error && (
         <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
           {error}
@@ -218,6 +223,17 @@ export function TripForm({ trip, onClose, onSuccess }: TripFormProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="tripDate">Trip Date</Label>
+          <DatePicker
+            value={tripDate}
+            onChange={setTripDate}
+            placeholder="Pick trip date"
+            max={new Date().toISOString().split('T')[0]}
+            disabled={loading}
+          />
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="totalKm">Total KM</Label>
           <Input

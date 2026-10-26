@@ -6,6 +6,7 @@ import { CreateDriverSchema, UpdateDriverSchema, type CreateDriverInput } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createDriverAction, updateDriverAction } from '@/server/actions/drivers'
 import { useToast } from '@/components/ui/toast'
@@ -159,11 +160,11 @@ export function DriverForm({ driver, onSuccess }: DriverFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="licenseExpiry">License Expiry Date</Label>
-          <Input
-            id="licenseExpiry"
-            type="date"
+          <DatePicker
             value={formData.licenseExpiry}
-            onChange={(e) => setFormData({ ...formData, licenseExpiry: e.target.value })}
+            onChange={(val) => setFormData({ ...formData, licenseExpiry: val })}
+            placeholder="Pick license expiry date"
+            disabled={isSubmitting}
           />
           {errors.licenseExpiry && <p className="text-sm text-red-600">{errors.licenseExpiry}</p>}
         </div>

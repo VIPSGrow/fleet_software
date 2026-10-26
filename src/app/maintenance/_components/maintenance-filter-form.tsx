@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/ui/date-picker'
 
 interface VehicleOption {
   id: string
@@ -19,6 +21,8 @@ export function MaintenanceFilterForm({ vehicles }: MaintenanceFilterFormProps) 
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [dateFrom, setDateFrom] = useState<string>(searchParams.get('dateFrom') || '')
+  const [dateTo, setDateTo] = useState<string>(searchParams.get('dateTo') || '')
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -28,8 +32,6 @@ export function MaintenanceFilterForm({ vehicles }: MaintenanceFilterFormProps) 
     const search = (formData.get('search') as string) || ''
     const vehicleId = (formData.get('vehicleId') as string) || ''
     const jobType = (formData.get('jobType') as string) || ''
-    const dateFrom = (formData.get('dateFrom') as string) || ''
-    const dateTo = (formData.get('dateTo') as string) || ''
 
     if (search) params.set('search', search)
     if (vehicleId) params.set('vehicleId', vehicleId)
@@ -83,18 +85,16 @@ export function MaintenanceFilterForm({ vehicles }: MaintenanceFilterFormProps) 
       </select>
 
       <div className="flex items-center gap-2">
-        <Input
-          name="dateFrom"
-          type="date"
-          defaultValue={searchParams.get('dateFrom') || ''}
-          className="w-auto"
+        <DatePicker
+          value={dateFrom}
+          onChange={setDateFrom}
+          placeholder="From date"
         />
         <span className="text-sm text-muted-foreground">to</span>
-        <Input
-          name="dateTo"
-          type="date"
-          defaultValue={searchParams.get('dateTo') || ''}
-          className="w-auto"
+        <DatePicker
+          value={dateTo}
+          onChange={setDateTo}
+          placeholder="To date"
         />
       </div>
 

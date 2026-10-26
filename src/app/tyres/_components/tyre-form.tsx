@@ -1,20 +1,37 @@
 'use client'
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { CreateTyreSchema } from '@/server/utils/validators'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePicker } from '@/components/ui/date-picker'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { format } from 'date-fns'
+import { listVehiclesAction } from '@/server/actions/vehicles'
+import { useToast } from '@/components/ui/toast'
+
+const AXLE_POSITIONS = [
+  'FL', 'FR', 'RL', 'RR',
+  'FLI', 'FRI', 'RLI', 'RRI',
+  'Spare', 'Other'
+]
+
+interface VehicleOption {
+  id: string
+  vehicleNo: string
+  makeModel: string
+}
 
 interface TyreFormProps {
   tyre?: any
@@ -24,65 +41,106 @@ interface TyreFormProps {
 
 export function TyreForm({ tyre, onClose, onSuccess }: TyreFormProps) {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [vehicles, setVehicles] = useState<VehicleOption[]>([])
+  const { toast } = useToast()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm({
-    resolver: zodResolver(tyre ? CreateTyreSchema.partial() : CreateTyreSchema),
-    defaultValues: tyre
-      ? {
-          vehicleId: tyre.vehicleId,
-          axlePosition: tyre.axlePosition,
-          brand: tyre.brand,
-          size: tyre.size,
-          purchaseDate: format(new Date(tyre.purchaseDate), 'yyyy-MM-dd'),
-          purchaseCost: tyre.purchaseCost,
-          fittedOdometer: tyre.fittedOdometer,
-        }
-      : {
-          vehicleId: '',
-          axlePosition: '',
-          brand: '',
-          size: '',
-          purchaseDate: format(new Date(), 'yyyy-MM-dd'),
-          purchaseCost: 0,
-          fittedOdometer: 0,
-        },
+  const [formData, setFormData] = useState({
+    vehicleId: tyre?.vehicleId || '',
+    axlePosition: tyre?.axlePosition || '',
+    brand: tyre?.brand || '',
+    size: tyre?.size || '',
+    purchaseDate: tyre?.purchaseDate
+      ? new Date(tyre.purchaseDate).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0],
+    purchaseCost: tyre?.purchaseCost || 0,
+    fittedOdometer: tyre?.fittedOdometer || 0,
   })
+
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (tyre) {
-      reset({
-        vehicleId: tyre.vehicleId,
-        axlePosition: tyre.axlePosition,
-        brand: tyre.brand,
-        size: tyre.size,
-        purchaseDate: format(new Date(tyre.purchaseDate), 'yyyy-MM-dd'),
-        purchaseCost: tyre.purchaseCost,
-        fittedOdometer: tyre.fittedOdometer,
+      setFormData({
+        vehicleId: tyre.vehicleId || '',
+        axlePosition: tyre.axlePosition || '',
+        brand: tyre.brand || '',
+        size: tyre.size || '',
+        purchaseDate: tyre.purchaseDate
+          ? new Date(tyre.purchaseDate).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0],
+        purchaseCost: tyre.purchaseCost || 0,
+        fittedOdometer: tyre.fittedOdometer || 0,
       })
     }
-  }, [tyre, reset])
+  }, [tyre])
 
-  const onSubmit = async (data: any) => {
+  useEffect(() => {
+    async function fetchVehicles() {
+      try {
+        const result = await listVehiclesAction(1, 1000, '', '', 'ACTIVE')
+        if (result.success && 'vehicles' in result) {
+          setVehicles(
+            result.vehicles.map((v) => ({
+              id: v.id,
+              vehicleNo: v.vehicleNo,
+              makeModel: v.makeModel,
+            }))
+          )
+        }
+      } catch {
+        // Silently fail - vehicles will be empty
+      }
+    }
+    fetchVehicles()
+  }, [])
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.vehicleId) newErrors.vehicleId = 'Vehicle is required'
+    if (!formData.axlePosition) newErrors.axlePosition = 'Axle position is required'
+    if (!formData.brand) newErrors.brand = 'Brand is required'
+    if (!formData.size) newErrors.size = 'Size is required'
+    if (!formData.purchaseDate) newErrors.purchaseDate = 'Purchase date is required'
+    if (formData.purchaseCost <= 0) newErrors.purchaseCost = 'Purchase cost must be greater than 0'
+    if (formData.fittedOdometer < 0) newErrors.fittedOdometer = 'Fitted odometer must be 0 or greater'
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!validateForm()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill all required fields',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setLoading(true)
-    setError('')
 
     try {
       const payload = {
-        ...data,
-        purchaseCost: Number(data.purchaseCost),
-        fittedOdometer: Number(data.fittedOdometer),
+        vehicleId: formData.vehicleId,
+        axlePosition: formData.axlePosition,
+        brand: formData.brand,
+        size: formData.size,
+        purchaseDate: new Date(formData.purchaseDate).toISOString(),
+        purchaseCost: Number(formData.purchaseCost),
+        fittedOdometer: Number(formData.fittedOdometer),
       }
 
-      const res = await fetch(tyre ? '/api/tyres' : '/api/tyres', {
-        method: tyre ? 'PUT' : 'POST',
+      const url = tyre ? `/api/tyres/${tyre.id}` : '/api/tyres'
+      const method = tyre ? 'PUT' : 'POST'
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tyre ? { id: tyre.id, ...payload } : payload),
+        body: JSON.stringify(payload),
       })
 
       if (!res.ok) {
@@ -90,119 +148,126 @@ export function TyreForm({ tyre, onClose, onSuccess }: TyreFormProps) {
         throw new Error(err.error || 'Failed to save tyre')
       }
 
+      toast({ title: tyre ? 'Tyre updated' : 'Tyre fitted', description: 'Successfully saved' })
       onSuccess()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const message = err instanceof Error ? err.message : 'An error occurred'
+      toast({ title: 'Error', description: message, variant: 'destructive' })
     } finally {
       setLoading(false)
     }
   }
 
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }))
+    }
+  }
+
   return (
-    <Dialog open={!!tyre || !tyre} onOpenChange={onClose}>
+    <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{tyre ? 'Edit Tyre' : 'Fit New Tyre'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {error && (
-            <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-              {error}
-            </div>
-          )}
-
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="vehicleId">Vehicle ID</Label>
-              <Input
-                id="vehicleId"
-                {...register('vehicleId')}
-                disabled={loading}
-              />
-              {errors.vehicleId && (
-                <p className="text-sm text-destructive">{errors.vehicleId.message as string}</p>
-              )}
+              <Label htmlFor="vehicleId">Vehicle *</Label>
+              <Select value={formData.vehicleId} onValueChange={(value) => handleChange('vehicleId', value)} disabled={loading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select vehicle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {vehicles.map((vehicle) => (
+                    <SelectItem key={vehicle.id} value={vehicle.id}>
+                      {vehicle.vehicleNo} - {vehicle.makeModel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.vehicleId && <p className="text-sm text-destructive">{errors.vehicleId}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="axlePosition">Axle Position</Label>
-              <Input
-                id="axlePosition"
-                {...register('axlePosition')}
-                disabled={loading}
-              />
-              {errors.axlePosition && (
-                <p className="text-sm text-destructive">{errors.axlePosition.message as string}</p>
-              )}
+              <Label htmlFor="axlePosition">Axle Position *</Label>
+              <Select value={formData.axlePosition} onValueChange={(value) => handleChange('axlePosition', value)} disabled={loading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select axle position" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AXLE_POSITIONS.map((position) => (
+                    <SelectItem key={position} value={position}>
+                      {position}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.axlePosition && <p className="text-sm text-destructive">{errors.axlePosition}</p>}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="brand">Brand</Label>
+              <Label htmlFor="brand">Brand *</Label>
               <Input
                 id="brand"
-                {...register('brand')}
+                value={formData.brand}
+                onChange={(e) => handleChange('brand', e.target.value)}
                 disabled={loading}
               />
-              {errors.brand && (
-                <p className="text-sm text-destructive">{errors.brand.message as string}</p>
-              )}
+              {errors.brand && <p className="text-sm text-destructive">{errors.brand}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="size">Size</Label>
+              <Label htmlFor="size">Size *</Label>
               <Input
                 id="size"
-                {...register('size')}
+                value={formData.size}
+                onChange={(e) => handleChange('size', e.target.value)}
                 disabled={loading}
               />
-              {errors.size && (
-                <p className="text-sm text-destructive">{errors.size.message as string}</p>
-              )}
+              {errors.size && <p className="text-sm text-destructive">{errors.size}</p>}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="purchaseDate">Purchase Date</Label>
-              <Input
-                id="purchaseDate"
-                type="date"
-                {...register('purchaseDate')}
+              <Label htmlFor="purchaseDate">Purchase Date *</Label>
+              <DatePicker
+                value={formData.purchaseDate}
+                onChange={(value) => handleChange('purchaseDate', value)}
+                placeholder="Pick purchase date"
                 disabled={loading}
               />
-              {errors.purchaseDate && (
-                <p className="text-sm text-destructive">{errors.purchaseDate.message as string}</p>
-              )}
+              {errors.purchaseDate && <p className="text-sm text-destructive">{errors.purchaseDate}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="purchaseCost">Purchase Cost (INR)</Label>
+              <Label htmlFor="purchaseCost">Purchase Cost (INR) *</Label>
               <Input
                 id="purchaseCost"
                 type="number"
                 step="0.01"
-                {...register('purchaseCost', { valueAsNumber: true })}
+                value={formData.purchaseCost}
+                onChange={(e) => handleChange('purchaseCost', parseFloat(e.target.value) || 0)}
                 disabled={loading}
               />
-              {errors.purchaseCost && (
-                <p className="text-sm text-destructive">{errors.purchaseCost.message as string}</p>
-              )}
+              {errors.purchaseCost && <p className="text-sm text-destructive">{errors.purchaseCost}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="fittedOdometer">Fitted Odometer</Label>
+              <Label htmlFor="fittedOdometer">Fitted Odometer *</Label>
               <Input
                 id="fittedOdometer"
                 type="number"
-                {...register('fittedOdometer', { valueAsNumber: true })}
+                value={formData.fittedOdometer}
+                onChange={(e) => handleChange('fittedOdometer', parseInt(e.target.value) || 0)}
                 disabled={loading}
               />
-              {errors.fittedOdometer && (
-                <p className="text-sm text-destructive">{errors.fittedOdometer.message as string}</p>
-              )}
+              {errors.fittedOdometer && <p className="text-sm text-destructive">{errors.fittedOdometer}</p>}
             </div>
           </div>
 

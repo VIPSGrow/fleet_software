@@ -7,7 +7,7 @@ import {
   calculateRPK,
 } from '@/server/utils/calculations'
 
-export async function getKPIs() {
+export async function getKPIs({ workshopId }: { workshopId?: string } = {}) {
   const [vehicleCount, activeVehicleCount, activeDriverCount, trips] = await Promise.all([
     prisma.vehicle.count(),
     prisma.vehicle.count({ where: { status: 'ACTIVE' } }),
@@ -26,6 +26,7 @@ export async function getKPIs() {
   })
 
   const maintenanceCost = await prisma.maintenanceJob.aggregate({
+    where: workshopId ? { workshopId } : undefined,
     _sum: { totalCost: true },
   })
 

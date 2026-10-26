@@ -12,6 +12,11 @@ export interface Tyre {
   status: 'FITTED' | 'REMOVED' | 'SCRAPPED'
   createdAt: Date
   updatedAt: Date
+  vehicle?: {
+    id: string
+    vehicleNo: string
+    makeModel: string
+  }
 }
 
 export interface CreateTyreInput {

@@ -1,10 +1,26 @@
 import { z } from 'zod'
 
+// Helper for dynamic "not in future" date check
+const isNotInFuture = (d: Date) => {
+  // Allow any timestamp up to the end of the current day
+  const endOfToday = new Date()
+  endOfToday.setHours(23, 59, 59, 999)
+  return d <= endOfToday
+}
+
 export const VehicleSchema = z.object({
   vehicleNo: z.string().min(3).max(50).regex(/^[A-Z0-9-]+$/),
-  registrationDate: z.coerce.date().max(new Date()),
+  registrationDate: z.coerce
+    .date()
+    .refine(isNotInFuture, { message: 'Registration date cannot be in the future' }),
   makeModel: z.string().min(1).max(100),
-  year: z.number().int().min(1900).max(new Date().getFullYear() + 1),
+  year: z
+    .number()
+    .int()
+    .min(1900)
+    .refine((y) => y <= new Date().getFullYear() + 1, {
+      message: 'Year cannot be more than 1 year in the future',
+    }),
   capacityTonnage: z.number().nonnegative().multipleOf(0.01),
   ownerType: z.enum(['OWNED', 'MARKET']),
   engineRef: z.string().max(100).optional().nullable(),
@@ -29,7 +45,9 @@ export const CreateDriverSchema = DriverSchema
 export const UpdateDriverSchema = DriverSchema.partial()
 
 export const TripSchema = z.object({
-  tripDate: z.coerce.date().max(new Date()),
+  tripDate: z.coerce
+    .date()
+    .refine(isNotInFuture, { message: 'Trip date cannot be in the future' }),
   vehicleId: z.string(),
   driverId: z.string(),
   customerId: z.string().optional().nullable(),
@@ -45,7 +63,9 @@ export const CreateTripSchema = TripSchema
 export const UpdateTripSchema = TripSchema.partial()
 
 export const FuelEntrySchema = z.object({
-  entryDate: z.coerce.date().max(new Date()),
+  entryDate: z.coerce
+    .date()
+    .refine(isNotInFuture, { message: 'Entry date cannot be in the future' }),
   vehicleId: z.string(),
   station: z.string().min(1).max(200),
   fuelType: z.enum(['DIESEL', 'PETROL', 'CNG', 'ELECTRIC']),
@@ -59,7 +79,9 @@ export const CreateFuelEntrySchema = FuelEntrySchema
 export const UpdateFuelEntrySchema = FuelEntrySchema.partial()
 
 export const MaintenanceJobSchema = z.object({
-  jobDate: z.coerce.date().max(new Date()),
+  jobDate: z.coerce
+    .date()
+    .refine(isNotInFuture, { message: 'Job date cannot be in the future' }),
   vehicleId: z.string(),
   odometerAtService: z.number().int().nonnegative(),
   jobType: z.enum(['PREVENTATIVE', 'BREAKDOWN']),
@@ -78,7 +100,9 @@ export const TyreSchema = z.object({
   axlePosition: z.string().min(1).max(50),
   brand: z.string().min(1).max(100),
   size: z.string().min(1).max(50),
-  purchaseDate: z.coerce.date().max(new Date()),
+  purchaseDate: z.coerce
+    .date()
+    .refine(isNotInFuture, { message: 'Purchase date cannot be in the future' }),
   purchaseCost: z.number().positive().multipleOf(0.01),
   fittedOdometer: z.number().int().nonnegative(),
   removalOdometer: z.number().int().nonnegative().optional().nullable(),

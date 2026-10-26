@@ -1,10 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { KPIs } from '@/types/analytics'
 import { formatCurrency, formatNumber } from '@/server/utils/formatters'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import {
@@ -29,6 +36,15 @@ export function AnalyticsContent({ data }: AnalyticsContentProps) {
   const [period, setPeriod] = useState({ start: '', end: '' })
   const [loading, setLoading] = useState(false)
   const [analyticsData, setAnalyticsData] = useState(data)
+  const [workshops, setWorkshops] = useState<{ id: string; name: string }[]>([])
+  const [selectedWorkshopId, setSelectedWorkshopId] = useState('')
+
+  useEffect(() => {
+    fetch('/api/workshops')
+      .then((res) => res.json())
+      .then((data) => setWorkshops(data))
+      .catch((error) => console.error('Failed to fetch workshops:', error))
+  }, [])
 
   const handleCalculate = async () => {
     setLoading(true)
@@ -36,10 +52,15 @@ export function AnalyticsContent({ data }: AnalyticsContentProps) {
       const res = await fetch('/api/analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(period),
+        body: JSON.stringify({
+          type: 'kpis',
+          startDate: period.start || undefined,
+          endDate: period.end || undefined,
+          workshopId: selectedWorkshopId || undefined,
+        }),
       })
       const result = await res.json()
-      setAnalyticsData(result)
+      setAnalyticsData({ kpis: result, chartData: [] })
     } catch (error) {
       console.error('Failed to load analytics:', error)
     } finally {
@@ -82,6 +103,21 @@ export function AnalyticsContent({ data }: AnalyticsContentProps) {
             onChange={(e) => setPeriod({ ...period, end: e.target.value })}
             className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
+          <div className="w-48">
+            <Select value={selectedWorkshopId} onValueChange={setSelectedWorkshopId}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Workshops" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Workshops</SelectItem>
+                {workshops.map((workshop) => (
+                  <SelectItem key={workshop.id} value={workshop.id}>
+                    {workshop.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Button onClick={handleCalculate} disabled={loading}>
             {loading ? 'Loading...' : 'Load'}
           </Button>

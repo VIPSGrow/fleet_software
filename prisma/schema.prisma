@@ -121,6 +121,7 @@ model Vehicle {
   fuelEntries        FuelEntry[]
   maintenanceJobs    MaintenanceJob[]
   tyres              Tyre[]
+  batteries          Battery[]
   vehicleDocuments   VehicleDocument[]
 
   @@index([vehicleNo])
@@ -247,6 +248,29 @@ model Tyre {
   @@index([vehicleId])
   @@index([status])
   @@map("tyres")
+}
+
+model Battery {
+  id              String     @id @default(cuid())
+  vehicleId       String
+  brand           String
+  model           String?
+  serialNumber    String?
+  purchaseDate    DateTime
+  purchaseCost    Decimal    @db.Decimal(10, 2)
+  warrantyMonths  Int        @default(0)
+  warrantyExpiry  DateTime?
+  fittedOdometer  Int
+  removalOdometer Int?
+  status          String     @default("FITTED")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+
+  @@index([vehicleId])
+  @@index([status])
+  @@map("batteries")
 }
 
 model DriverDocument {

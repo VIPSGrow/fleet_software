@@ -6,6 +6,7 @@ import { CreateDocumentSchema, type CreateDriverDocumentInput } from '@/types/dr
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createDriverDocumentAction } from '@/server/actions/drivers'
 import { useToast } from '@/components/ui/toast'
@@ -157,22 +158,22 @@ export default function NewDriverDocumentPage({ params }: NewDriverDocumentPageP
 
           <div className="space-y-2">
             <Label htmlFor="issueDate">Issue Date</Label>
-            <Input
-              id="issueDate"
-              type="date"
+            <DatePicker
               value={formData.issueDate}
-              onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
+              onChange={(val) => setFormData({ ...formData, issueDate: val })}
+              placeholder="Pick issue date"
+              disabled={isSubmitting}
             />
             {errors.issueDate && <p className="text-sm text-red-600">{errors.issueDate}</p>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="expiryDate">Expiry Date</Label>
-            <Input
-              id="expiryDate"
-              type="date"
+            <DatePicker
               value={formData.expiryDate}
-              onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+              onChange={(val) => setFormData({ ...formData, expiryDate: val })}
+              placeholder="Pick expiry date"
+              disabled={isSubmitting}
             />
             {errors.expiryDate && <p className="text-sm text-red-600">{errors.expiryDate}</p>}
           </div>

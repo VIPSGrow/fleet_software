@@ -9,10 +9,9 @@ import { TyreForm } from './tyre-form'
 
 interface TyreTableProps {
   tyres: Tyre[]
-  onTyreUpdated?: () => void
 }
 
-export function TyreTable({ tyres, onTyreUpdated }: TyreTableProps) {
+export function TyreTable({ tyres }: TyreTableProps) {
   const [editingTyre, setEditingTyre] = useState<Tyre | null>(null)
 
   const getStatusBadge = (status: string) => {
@@ -29,7 +28,7 @@ export function TyreTable({ tyres, onTyreUpdated }: TyreTableProps) {
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b bg-muted/50">
@@ -55,7 +54,7 @@ export function TyreTable({ tyres, onTyreUpdated }: TyreTableProps) {
           ) : (
             tyres.map((tyre) => (
               <tr key={tyre.id} className="border-b hover:bg-muted/30">
-                <td className="p-3">{tyre.vehicleId}</td>
+                <td className="p-3">{tyre.vehicle?.vehicleNo || tyre.vehicleId} - {tyre.vehicle?.makeModel || ''}</td>
                 <td className="p-3">{tyre.axlePosition}</td>
                 <td className="p-3">{tyre.brand}</td>
                 <td className="p-3">{tyre.size}</td>
@@ -91,7 +90,6 @@ export function TyreTable({ tyres, onTyreUpdated }: TyreTableProps) {
           onClose={() => setEditingTyre(null)}
           onSuccess={() => {
             setEditingTyre(null)
-            onTyreUpdated?.()
           }}
         />
       )}

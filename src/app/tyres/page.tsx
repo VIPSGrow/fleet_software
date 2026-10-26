@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { listTyres } from '@/server/actions/tyres'
 import { TyreTable } from './_components/tyre-table'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -28,11 +29,8 @@ export default function TyresPage() {
 }
 
 async function TyresContent() {
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/tyres?limit=50`, {
-    cache: 'no-store',
-  })
-  const data = await res.json()
-  const tyres = data.tyres || []
+  const result = await listTyres({ limit: 50 })
+  const tyres = result.tyres || []
 
-  return <TyreTable tyres={tyres} onTyreUpdated={() => window.location.reload()} />
+  return <TyreTable tyres={tyres} />
 }

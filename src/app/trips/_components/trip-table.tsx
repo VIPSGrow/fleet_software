@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trip } from '@/types/trip'
+import { TripWithRelations } from '@/types/trip'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDate, formatNumber } from '@/server/utils/formatters'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { TripForm } from './trip-form'
 import { updateTripStatus } from '@/server/actions/trips'
 
 interface TripTableProps {
-  trips: Trip[]
+  trips: TripWithRelations[]
 }
 
 export function TripTable({ trips }: TripTableProps) {
@@ -48,7 +48,7 @@ export function TripTable({ trips }: TripTableProps) {
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b bg-muted/50">
@@ -74,8 +74,8 @@ export function TripTable({ trips }: TripTableProps) {
             trips.map((trip) => (
               <tr key={trip.id} className="border-b hover:bg-muted/30">
                 <td className="p-3">{formatDate(trip.tripDate)}</td>
-                <td className="p-3">{trip.vehicleId}</td>
-                <td className="p-3">{trip.driverId}</td>
+                <td className="p-3">{trip.vehicle?.vehicleNo} - {trip.vehicle?.makeModel || ''}</td>
+                <td className="p-3">{trip.driver?.fullName || trip.driverId}</td>
                 <td className="p-3">{trip.origin}</td>
                 <td className="p-3">{trip.destination}</td>
                 <td className="p-3 text-right">{formatNumber(trip.totalKm, 1)}</td>

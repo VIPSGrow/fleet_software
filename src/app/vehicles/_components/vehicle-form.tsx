@@ -6,6 +6,7 @@ import { createVehicleSchema, updateVehicleSchema, type CreateVehicleInput } fro
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createVehicleAction, updateVehicleAction } from '@/server/actions/vehicles'
 import { useToast } from '@/components/ui/toast'
@@ -142,11 +143,11 @@ export function VehicleForm({ vehicle, onSuccess }: VehicleFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="registrationDate">Registration Date</Label>
-          <Input
-            id="registrationDate"
-            type="date"
+          <DatePicker
             value={formData.registrationDate}
-            onChange={(e) => setFormData({ ...formData, registrationDate: e.target.value })}
+            onChange={(val) => setFormData({ ...formData, registrationDate: val })}
+            placeholder="Pick registration date"
+            disabled={isSubmitting}
           />
           {errors.registrationDate && <p className="text-sm text-red-600">{errors.registrationDate}</p>}
         </div>
