@@ -1,5 +1,6 @@
 export interface Trip {
   id: string
+  tripType: 'POINT_TO_POINT' | 'PACKAGE'
   tripDate: Date
   vehicleId: string
   driverId: string
@@ -14,9 +15,20 @@ export interface Trip {
   createdById?: string
   createdAt: Date
   updatedAt: Date
+
+  // Package fields
+  rentalDays?: number
+  includedKm?: number
+  baseAmount?: number
+  perKmRate?: number
+  startOdometer?: number
+  endOdometer?: number
+  startDateTime?: Date
+  endDateTime?: Date
 }
 
 export interface CreateTripInput {
+  tripType?: 'POINT_TO_POINT' | 'PACKAGE'
   tripDate: Date
   vehicleId: string
   driverId: string
@@ -26,6 +38,15 @@ export interface CreateTripInput {
   totalKm: number
   freightAmount?: number
   revenue?: number
+  // Package fields
+  rentalDays?: number
+  includedKm?: number
+  baseAmount?: number
+  perKmRate?: number
+  startOdometer?: number
+  endOdometer?: number
+  startDateTime?: Date
+  endDateTime?: Date
   notes?: string
 }
 

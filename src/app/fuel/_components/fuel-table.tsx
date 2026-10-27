@@ -214,7 +214,8 @@ export function FuelTable({ data }: FuelTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-md border">
         <TableContainer>
           <Table>
             <TableHeader>
@@ -252,6 +253,85 @@ export function FuelTable({ data }: FuelTableProps) {
           </Table>
         </TableContainer>
       </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {data.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground border rounded-md">
+            No fuel entries found.
+          </div>
+        ) : (
+          data.map((entry) => (
+            <div key={entry.id} className="border rounded-lg p-4 space-y-3 bg-card">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-semibold">{entry.vehicle ? `${entry.vehicle.vehicleNo}` : '-'}</p>
+                  <p className="text-sm text-muted-foreground">{entry.vehicle?.makeModel}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{formatDate(entry.entryDate)}</p>
+                </div>
+                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                  entry.fuelType === 'DIESEL' ? 'bg-blue-100 text-blue-800' :
+                  entry.fuelType === 'PETROL' ? 'bg-green-100 text-green-800' :
+                  entry.fuelType === 'CNG' ? 'bg-yellow-100 text-yellow-800' :
+                  entry.fuelType === 'ELECTRIC' ? 'bg-purple-100 text-purple-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {entry.fuelType}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Station:</span> {entry.station}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Litres:</span> {formatNumber(entry.litres, 2)}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Rate/L:</span> {formatCurrency(entry.ratePerLitre)}
+                </div>
+                <div className="font-semibold">
+                  <span className="text-muted-foreground font-normal">Total:</span> {formatCurrency(entry.totalAmount)}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Odometer:</span> {formatNumber(entry.odometerReading, 0)} km
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Economy:</span> {entry.fuelEconomy !== undefined ? `${formatNumber(entry.fuelEconomy, 2)} km/L` : '-'}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-2 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/fuel/${entry.id}/edit`)}
+                  className="flex-1"
+                >
+                  <Edit3 className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    if (confirm('Are you sure you want to delete this fuel entry?')) {
+                      setDeletingId(entry.id)
+                      await deleteFuelEntryAction(entry.id)
+                      setDeletingId(null)
+                      router.refresh()
+                    }
+                  }}
+                  disabled={deletingId === entry.id}
+                  className="flex-1 text-red-600 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       <div className="flex items-center justify-end space-x-2">
         <Button
           variant="outline"

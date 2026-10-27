@@ -45,6 +45,7 @@ export const CreateDriverSchema = DriverSchema
 export const UpdateDriverSchema = DriverSchema.partial()
 
 export const TripSchema = z.object({
+  tripType: z.enum(['POINT_TO_POINT', 'PACKAGE']).default('POINT_TO_POINT'),
   tripDate: z.coerce
     .date()
     .refine(isNotInFuture, { message: 'Trip date cannot be in the future' }),
@@ -56,6 +57,15 @@ export const TripSchema = z.object({
   totalKm: z.number().nonnegative().multipleOf(0.01),
   freightAmount: z.number().nonnegative().default(0),
   revenue: z.number().nonnegative().default(0),
+  // Package fields
+  rentalDays: z.number().int().nonnegative().optional().nullable(),
+  includedKm: z.number().nonnegative().multipleOf(0.01).optional().nullable(),
+  baseAmount: z.number().nonnegative().multipleOf(0.01).optional().nullable(),
+  perKmRate: z.number().nonnegative().multipleOf(0.01).optional().nullable(),
+  startOdometer: z.number().int().nonnegative().optional().nullable(),
+  endOdometer: z.number().int().nonnegative().optional().nullable(),
+  startDateTime: z.coerce.date().optional().nullable(),
+  endDateTime: z.coerce.date().optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
 })
 

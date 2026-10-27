@@ -5,12 +5,31 @@ import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { TripSchema, CreateTripSchema, UpdateTripSchema } from '@/server/utils/validators'
 
+function calculatePackageRevenue(input: z.infer<typeof CreateTripSchema>) {
+  if (input.tripType !== 'PACKAGE') return input.revenue ?? 0
+
+  const baseAmount = input.baseAmount ?? 0
+  const includedKm = input.includedKm ?? 0
+  const perKmRate = input.perKmRate ?? 0
+  const totalKm = input.totalKm ?? 0
+
+  const extraKm = Math.max(0, totalKm - includedKm)
+  const extraAmount = extraKm * perKmRate
+
+  return baseAmount + extraAmount
+}
+
 export async function createTrip(input: z.infer<typeof CreateTripSchema>) {
   try {
     const validated = CreateTripSchema.parse(input)
 
+    const revenue = calculatePackageRevenue(validated)
+
     const trip = await prisma.trip.create({
-      data: validated,
+      data: {
+        ...validated,
+        revenue,
+      },
       include: {
         vehicle: true,
         driver: true,
@@ -102,10 +121,6 @@ export async function updateTripStatus(
     }
     return { success: false, error: 'An unknown error occurred' }
   }
-}
-
-export async function completeTrip(id: string) {
-  return updateTripStatus(id, 'COMPLETED')
 }
 
 export async function listTrips(filters: {

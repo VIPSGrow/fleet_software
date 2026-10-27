@@ -103,7 +103,7 @@ export function MobileNav() {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[260px] p-0 flex flex-col">
+      <SheetContent side="left" className="w-[260px] p-0 flex flex-col h-full">
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">Fleet MS</h1>
@@ -123,7 +123,7 @@ export function MobileNav() {
         </div>
         <div className="p-4 border-t">
           <p className="text-xs text-muted-foreground">
-            © 2024 Fleet Software
+            © {new Date().getFullYear()} <a href="https://gtsol.in" target="_blank" rel="noopener noreferrer">Fleet Software</a>
           </p>
         </div>
       </SheetContent>

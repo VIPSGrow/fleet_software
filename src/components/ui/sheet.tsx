@@ -29,10 +29,10 @@ const SheetContent = React.forwardRef<
   }
 >(({ className, children, side = 'left', ...props }, ref) => {
   const sideClass = {
-    top: 'inset-x-0 top-0 translate-y-0 data-[state=closed]:-translate-y-full',
-    right: 'inset-y-0 right-0 w-3/4 max-w-xs translate-x-full data-[state=closed]:translate-x-0',
-    bottom: 'inset-x-0 bottom-0 translate-y-full data-[state=closed]:translate-y-0',
-    left: 'inset-y-0 left-0 w-[260px] max-w-xs translate-x-[-100%] data-[state=closed]:translate-x-0',
+    top: 'inset-x-0 top-0 translate-y-[-100%] data-[state=open]:translate-y-0',
+    right: 'inset-y-0 right-0 w-3/4 max-w-xs translate-x-full data-[state=open]:translate-x-0',
+    bottom: 'inset-x-0 bottom-0 translate-y-full data-[state=open]:translate-y-0',
+    left: 'inset-y-0 left-0 w-[260px] max-w-xs translate-x-[-100%] data-[state=open]:translate-x-0',
   }
 
   return (

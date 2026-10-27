@@ -150,7 +150,8 @@ export function VehicleTable({ data }: VehicleTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-md border">
         <TableContainer>
           <Table>
             <TableHeader>
@@ -188,6 +189,80 @@ export function VehicleTable({ data }: VehicleTableProps) {
           </Table>
         </TableContainer>
       </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {data.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground border rounded-md">
+            No vehicles found.
+          </div>
+        ) : (
+          data.map((vehicle) => (
+            <div key={vehicle.id} className="border rounded-lg p-4 space-y-3 bg-card">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg">{vehicle.vehicleNo}</h3>
+                  <p className="text-sm text-muted-foreground">{vehicle.makeModel}</p>
+                </div>
+                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                  vehicle.status === 'ACTIVE'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {vehicle.status}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Year:</span> {vehicle.year}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Capacity:</span> {vehicle.capacityTonnage} t
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Owner:</span> {vehicle.ownerType}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Odometer:</span> {vehicle.currentOdometer} km
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-2 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/vehicles/${vehicle.id}`)}
+                  className="flex-1"
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    if (confirm('Are you sure you want to delete this vehicle?')) {
+                      setDeletingId(vehicle.id)
+                      const result = await deleteVehicleAction(vehicle.id)
+                      setDeletingId(null)
+                      if (result.success) {
+                        router.refresh()
+                      } else {
+                        alert(result.error || 'Failed to delete vehicle')
+                      }
+                    }
+                  }}
+                  disabled={deletingId === vehicle.id}
+                  className="flex-1 text-red-600 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       <div className="flex items-center justify-end space-x-2">
         <Button
           variant="outline"

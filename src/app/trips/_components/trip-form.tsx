@@ -54,22 +54,42 @@ export function TripForm({ trip, onClose, onSuccess }: TripFormProps) {
     resolver: zodResolver(CreateTripSchema.omit({ tripDate: true })),
     defaultValues: trip
       ? {
+          tripType: trip.tripType,
           vehicleId: trip.vehicleId,
           driverId: trip.driverId,
           origin: trip.origin,
           destination: trip.destination,
           totalKm: trip.totalKm,
           revenue: trip.revenue,
+          rentalDays: trip.rentalDays,
+          includedKm: trip.includedKm,
+          baseAmount: trip.baseAmount,
+          perKmRate: trip.perKmRate,
+          startOdometer: trip.startOdometer,
+          endOdometer: trip.endOdometer,
+          startDateTime: trip.startDateTime ? new Date(trip.startDateTime) : undefined,
+          endDateTime: trip.endDateTime ? new Date(trip.endDateTime) : undefined,
         }
       : {
+          tripType: 'POINT_TO_POINT',
           vehicleId: '',
           driverId: '',
           origin: '',
           destination: '',
           totalKm: 0,
           revenue: 0,
+          rentalDays: undefined,
+          includedKm: undefined,
+          baseAmount: undefined,
+          perKmRate: undefined,
+          startOdometer: undefined,
+          endOdometer: undefined,
+          startDateTime: undefined,
+          endDateTime: undefined,
         },
   })
+
+  const tripType = watch('tripType')
 
   useEffect(() => {
     if (trip) {
@@ -262,6 +282,140 @@ export function TripForm({ trip, onClose, onSuccess }: TripFormProps) {
           )}
         </div>
       </div>
+
+      {/* Package / Rental Mode */}
+      <div className="space-y-2">
+        <Label htmlFor="tripType">Trip Type</Label>
+        <Select
+          value={watch('tripType') as 'POINT_TO_POINT' | 'PACKAGE' | undefined}
+          onValueChange={(value) => {
+            setValue('tripType', value as 'POINT_TO_POINT' | 'PACKAGE', { shouldValidate: true })
+          }}
+          disabled={loading}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select trip type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem key="POINT_TO_POINT" value="POINT_TO_POINT">
+              Point to Point
+            </SelectItem>
+            <SelectItem key="PACKAGE" value="PACKAGE">
+              Package / Rental
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {tripType === 'PACKAGE' && (
+        <fieldset className="border p-4 rounded-lg bg-muted/50">
+          <legend className="text-sm font-semibold px-2">Package / Rental Details</legend>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="rentalDays">Rental Days</Label>
+              <Input
+                id="rentalDays"
+                type="number"
+                step="1"
+                {...register('rentalDays', { valueAsNumber: true })}
+                disabled={loading}
+              />
+              {errors.rentalDays && (
+                <p className="text-sm text-destructive">{errors.rentalDays.message as string}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="includedKm">Included KM</Label>
+              <Input
+                id="includedKm"
+                type="number"
+                step="0.01"
+                {...register('includedKm', { valueAsNumber: true })}
+                disabled={loading}
+              />
+              {errors.includedKm && (
+                <p className="text-sm text-destructive">{errors.includedKm.message as string}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="baseAmount">Base Amount (INR)</Label>
+              <Input
+                id="baseAmount"
+                type="number"
+                step="0.01"
+                {...register('baseAmount', { valueAsNumber: true })}
+                disabled={loading}
+              />
+              {errors.baseAmount && (
+                <p className="text-sm text-destructive">{errors.baseAmount.message as string}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="perKmRate">Per KM Rate (INR)</Label>
+              <Input
+                id="perKmRate"
+                type="number"
+                step="0.01"
+                {...register('perKmRate', { valueAsNumber: true })}
+                disabled={loading}
+              />
+              {errors.perKmRate && (
+                <p className="text-sm text-destructive">{errors.perKmRate.message as string}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="startOdometer">Start Odometer</Label>
+              <Input
+                id="startOdometer"
+                type="number"
+                step="1"
+                {...register('startOdometer', { valueAsNumber: true })}
+                disabled={loading}
+              />
+              {errors.startOdometer && (
+                <p className="text-sm text-destructive">{errors.startOdometer.message as string}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endOdometer">End Odometer</Label>
+              <Input
+                id="endOdometer"
+                type="number"
+                step="1"
+                {...register('endOdometer', { valueAsNumber: true })}
+                disabled={loading}
+              />
+              {errors.endOdometer && (
+                <p className="text-sm text-destructive">{errors.endOdometer.message as string}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="startDateTime">Start Date Time</Label>
+              <Input
+                id="startDateTime"
+                type="datetime-local"
+                {...register('startDateTime')}
+                disabled={loading}
+              />
+              {errors.startDateTime && (
+                <p className="text-sm text-destructive">{errors.startDateTime.message as string}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endDateTime">End Date Time</Label>
+              <Input
+                id="endDateTime"
+                type="datetime-local"
+                {...register('endDateTime')}
+                disabled={loading}
+              />
+              {errors.endDateTime && (
+                <p className="text-sm text-destructive">{errors.endDateTime.message as string}</p>
+              )}
+            </div>
+          </div>
+        </fieldset>
+      )}
 
       <div className="flex justify-end gap-2 pt-4">
         <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
